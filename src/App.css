@@ -1,17 +1,25 @@
-.App {
-  text-align: center;
-}
-
-.App-header {
-  color: aliceblue;
-}
-
 .App-link {
   color: #61dafb;
 }
 
+/*.scale-down {
+  transform: scale(0.25);
+}*/
+
+.container {
+  box-sizing: border-box;
+}
+
 body {
   background-color: #282c34;
+}
+
+.App-header {
+  font-size: 36px;
+}
+
+.timer-header {
+  font-size: 30px;
 }
 
 .mid {
@@ -29,19 +37,88 @@ label {
   padding: 4px 0;
   border-radius: 25px;
   background: linear-gradient(rgb(58, 58, 144), purple);
-}
-
-.remove-padding {
-  padding: 0;
+  width: 100%;
 }
 
 button {
   border-radius: 25px;
   font-weight: bold;
   font-size: larger;
+  box-shadow: 2px 2px black;
+  padding: 4px 0;
+  background: linear-gradient(90deg, purple, pink);
+  width: 100%;
+}
+
+.button:active {
+  transform: scale(0.95);
 }
 
 .drop-shadow {
   filter: drop-shadow(3px 3px darkblue);
   
 }
+
+h1, h2 {
+  text-shadow: 3px 3px 2px black;
+  color: aliceblue;
+}
+
+.timer-border {
+  border-radius: 25px;
+  color: pink;
+  border-style: solid;
+  margin: 5px;
+  box-shadow: 3px 3px black;
+}
+
+.outer-border {
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 25px;
+  color: pink;
+  border-style: solid;
+  margin: 5px auto;
+  padding: 10px;
+  box-shadow: 3px 3px black;
+  max-width: 500px;
+}
+
+.center-margins-vert {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.remove-margin {
+  margin: 0;
+}
+
+.remove-padding {
+  padding: 0;
+}
+
+/*
+@media (max-width: 576px) {
+  label {
+    font-size: larger;
+    font-weight: bold;
+    color: aliceblue;
+    padding: 4px 0;
+    border-radius: 25px;
+    background: linear-gradient(rgb(58, 58, 144), purple);
+    width: 100%;
+  }
+  button {
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: larger;
+    box-shadow: 2px 2px black;
+    padding: 4px 0;
+    background: linear-gradient(90deg, purple, pink);
+    width: 100%;
+  }
+  .timer-display {
+    display: flex;
+    justify-content: center;
+  }
+}*/
