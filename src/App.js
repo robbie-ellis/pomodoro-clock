@@ -14,13 +14,32 @@ function App() {
   const sessionDisplay = useRef(null);
   const timeLeftDisplay = useRef(null);
   const startStopDisplay = useRef(null);
+  const beepSound = useRef(null);
 
   const [breakLength, setBreakLength] = useState(INITIAL_BREAK_LENGTH);
   const [sessionLength, setSessionLength] = useState(INITIAL_SESSION_LENGTH);
   const [timeLeftMin, setTimeLeftMin] = useState(INITIAL_SESSION_LENGTH);
   const [timeLeftSec, setTimeLeftSec] = useState(0);
   const [paused, setPaused] = useState(true);
+  const [onBreak, setOnBreak] = useState(false);
   
+  const playSound = () => {
+    if (beepSound.current) {
+      beepSound.current.play();
+      setTimeout(() => {
+        stopAndRewindSound();
+      }, beepSound.current.duration * 1000);
+    }
+  };
+
+  const stopAndRewindSound = () => {
+    if (beepSound.current) {
+      beepSound.current.pause();
+      beepSound.current.currentTime = 0;
+    }
+  };
+
+  // creates the interval for countdown (1 sec) and 
   useEffect(() => {
     /* 
     minutes and seconds variables are used here becuase, while this 
@@ -45,14 +64,22 @@ function App() {
           console.log("Min" + timeLeftMin);
           console.log("Sec" + timeLeftSec);
         } else if (seconds === 0 && minutes === 0) {
-          setPaused(true);
-          console.log("third");
+          setOnBreak((prevOnBreak) => !prevOnBreak);
+          playSound();
+          if (onBreak) {
+            setTimeLeftMin(breakLength);
+            setTimeLeftSec(0);
+          } else {
+            setTimeLeftMin(sessionLength);
+            setTimeLeftSec(0);
+          }
         }
       }, 1000);
       return () => clearInterval(interval);
     }
   }, [paused]);
   
+  //displays time left in the countdown clock.
   useEffect(() => {
     let minutes = "";
     let seconds = "";
@@ -78,20 +105,24 @@ function App() {
     startStopDisplay.current.innerText = paused ? "Pause" : "Start";
   }
 
+  //resets the timer
   function reset() {
     setPaused(true);
     setBreakLength(INITIAL_BREAK_LENGTH);
     setSessionLength(INITIAL_SESSION_LENGTH);
     setTimeLeftMin(INITIAL_SESSION_LENGTH);
     setTimeLeftSec(0);
+    setOnBreak(false);
     startStopDisplay.current.innerText = "Start";
   }
 
+  //handles decrement and increment buttons
   useEffect(() => {
     const breakDec = breakDecrementBtn.current;
     const breakInc = breakIncrementBtn.current;
     const sessionDec = sessionDecrementBtn.current;
     const sessionInc = sessionIncrementBtn.current;
+    // breakDec is used here just to make sure the button elements have loaded 
     if (breakDec) {
       const handleClick = (event) => {
         const button = event.target.id;
@@ -122,21 +153,12 @@ function App() {
     }
   }, []);
 
+  //displays results of using increment or decrement buttons
   useEffect(() => {
     breakDisplay.current.innerText = breakLength;
     sessionDisplay.current.innerText = sessionLength;
     setTimeLeftMin(sessionLength);
   }, [breakLength, sessionLength]);
-
-  /*
-  function breakDecrement () {
-    setBreakLength((prevBreakLength) => prevBreakLength - 1);
-  }
-
-  function breakIncrement () {
-    setBreakLength((prevBreakLength) => prevBreakLength + 1);
-  }
-  */
 
   return (
     <div className='outer-border container scale-down'>
@@ -166,6 +188,7 @@ function App() {
           <div className='col-4 center-margins-vert'><button id='reset' onClick={reset} className='button'>Reset</button></div>
         </div>
       </div>
+      <audio id='beep' ref={beepSound} src='https://cdn.freecodecamp.org/testable-projects-fcc/audio/BeepSound.wav'></audio>
       <br/>
     </div>
   );
