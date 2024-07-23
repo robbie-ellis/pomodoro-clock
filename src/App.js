@@ -12,6 +12,7 @@ function App() {
   const sessionIncrementBtn = useRef(null);
   const breakDisplay = useRef(null);
   const sessionDisplay = useRef(null);
+  const sessionOrBreakText = useRef(null);
   const timeLeftDisplay = useRef(null);
   const startStopDisplay = useRef(null);
   const beepSound = useRef(null);
@@ -39,7 +40,16 @@ function App() {
     }
   };
 
-  // creates the interval for countdown (1 sec) and 
+  // session and break text updater
+  useEffect(() => {
+    if (!onBreak) {
+      sessionOrBreakText.current.innerText = 'Session';
+    } else {
+      sessionOrBreakText.current.innerText = 'Break';
+    }
+  }, [onBreak]);
+
+  // countdown functionality
   useEffect(() => {
     /* 
     minutes and seconds variables are used here becuase, while this 
@@ -48,6 +58,7 @@ function App() {
     dependency array, but that would be inefficient since it would 
     cause this useEffect to unmount and remount every second. 
     */ 
+
     let minutes = timeLeftMin;
     let seconds = timeLeftSec;
     if (!paused && (minutes > 0 || seconds > 0)) {
@@ -55,29 +66,34 @@ function App() {
         if (seconds > 0) {
           setTimeLeftSec((prevTimeLeftSec) => prevTimeLeftSec - 1);
           seconds--;
-          console.log("first");
         } else if (seconds === 0 && minutes > 0) {
           setTimeLeftMin((prevTimeLeftMin) => prevTimeLeftMin - 1);
           setTimeLeftSec(() => 59);
           minutes--;
           seconds = 59;
-          console.log("Min" + timeLeftMin);
-          console.log("Sec" + timeLeftSec);
         } else if (seconds === 0 && minutes === 0) {
-          setOnBreak((prevOnBreak) => !prevOnBreak);
           playSound();
-          if (onBreak) {
-            setTimeLeftMin(breakLength);
-            setTimeLeftSec(0);
-          } else {
-            setTimeLeftMin(sessionLength);
-            setTimeLeftSec(0);
-          }
+          setPaused(true);
+          setOnBreak((prevOnBreak) => !prevOnBreak);
         }
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [paused]);
+  }, [paused, onBreak]);
+
+  // break functionality
+  useEffect(() => {
+    if (timeLeftMin === 0 && timeLeftSec === 0) {
+      if (onBreak) {
+        setTimeLeftMin(breakLength);
+        setTimeLeftSec(0);
+      } else {
+        setTimeLeftMin(sessionLength);
+        setTimeLeftSec(0);
+      }
+      setPaused(false);
+    }
+  }, [onBreak]);
   
   //displays time left in the countdown clock.
   useEffect(() => {
@@ -100,6 +116,7 @@ function App() {
     timeLeftDisplay.current.value = `${minutes}:${seconds}`;
   }, [timeLeftMin, timeLeftSec]);
 
+  //handles pausing and resuming
   function startOrPause() {
     setPaused((prevPaused) => !prevPaused);
     startStopDisplay.current.innerText = paused ? "Pause" : "Start";
@@ -113,7 +130,9 @@ function App() {
     setTimeLeftMin(INITIAL_SESSION_LENGTH);
     setTimeLeftSec(0);
     setOnBreak(false);
+    stopAndRewindSound();
     startStopDisplay.current.innerText = "Start";
+    sessionOrBreakText.current.innerText = "Session";
   }
 
   //handles decrement and increment buttons
@@ -128,16 +147,37 @@ function App() {
         const button = event.target.id;
         switch (button) {
           case "break-decrement":
-            setBreakLength((prevBreakLength) => prevBreakLength - 1);
+            setBreakLength((prevBreakLength) => {
+              if (prevBreakLength > 1) {
+                return prevBreakLength - 1;
+              }
+              return prevBreakLength;
+            });
             break;
           case "break-increment":
-            setBreakLength((prevBreakLength) => prevBreakLength + 1);
+            setBreakLength((prevBreakLength) => {
+              if (prevBreakLength < 60) {
+                return prevBreakLength + 1;
+              }
+              return prevBreakLength;
+            });
             break;
           case "session-decrement":
-            setSessionLength((prevSessionLength) => prevSessionLength - 1);
+            setSessionLength((prevSessionLength) => {
+              if (prevSessionLength > 1) {
+                return prevSessionLength - 1;
+              }
+              return prevSessionLength;
+            });
             break;
           case "session-increment":
-            setSessionLength((prevSessionLength) => prevSessionLength + 1);
+            setSessionLength((prevSessionLength) => {
+              if (prevSessionLength < 60) {
+                return prevSessionLength + 1;
+              }
+              return prevSessionLength;
+            });
+            break;
         } 
       }
       breakDec.addEventListener('click', handleClick);
@@ -182,7 +222,7 @@ function App() {
         <div className='row remove-margin'>
           <div className='col-4 center-margins-vert'><button id='start_stop' onClick={startOrPause} className="button" ref={startStopDisplay} value="Start">Start</button></div>
           <div className='col-4'>
-            <h2 id='timer-label' className=' timer-display timer-header'>Session</h2>
+            <h2 id='timer-label' className=' timer-display timer-header' ref={sessionOrBreakText}>Session</h2>
             <h1 id='time-left' className='timer-display' ref={timeLeftDisplay} value="25:00">25:00</h1>
           </div>
           <div className='col-4 center-margins-vert'><button id='reset' onClick={reset} className='button'>Reset</button></div>
